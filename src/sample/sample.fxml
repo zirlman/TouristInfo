@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXDatePicker?>
+<?import com.jfoenix.controls.JFXPasswordField?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane minHeight="200.0" minWidth="400.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Delete" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <HBox spacing="10.0">
+               <children>
+                  <JFXTextField fx:id="field1" labelFloat="true" promptText="username" />
+                  <JFXPasswordField fx:id="field2" labelFloat="true" promptText="password" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <JFXButton fx:id="submitButton" ripplerFill="WHITE" style="-fx-background-color: #263238;" text="Submit" textFill="WHITE" />
+                  <JFXButton fx:id="cancelButton" cancelButton="true" ripplerFill="WHITE" style="-fx-background-color: #263238;" text="Cancel" textFill="WHITE" />
+               </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox spacing="10.0">
+               <children>
+                  <ChoiceBox fx:id="choiceBox" prefWidth="150.0" />
+                  <JFXButton fx:id="showButton" ripplerFill="WHITE" style="-fx-background-color: #263238;" text="Show" textFill="WHITE" />
+                  <Label fx:id="label">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Label>
+                  <JFXDatePicker fx:id="jfxDatePicker" defaultColor="#263238" />
+               </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+   <bottom>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Test test" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

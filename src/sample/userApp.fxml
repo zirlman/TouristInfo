@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #E3F2FD;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.userAppController">
+   <children>
+      <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="600.0" style="-fx-background-color: #1E88E5;">
+         <children>
+            <Label prefHeight="100.0" prefWidth="260.0" style="-fx-background-color: #1565C0;" text="    USER ACCOUNT" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="358.0" layoutY="35.0" text="OPTIONS" textFill="WHITE" AnchorPane.rightAnchor="155.0" AnchorPane.topAnchor="34.0">
+               <font>
+                  <Font size="22.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <Label fx:id="infoLabel" layoutY="386.0" prefHeight="18.0" prefWidth="600.0" style="-fx-background-color: #CFD8DC;" />
+      <JFXButton fx:id="touristNumberButton" buttonType="RAISED" layoutX="452.0" layoutY="157.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="105.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="Tourist number" textFill="WHITE" AnchorPane.bottomAnchor="195.0" AnchorPane.leftAnchor="450.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="180.0" />
+      <JFXButton fx:id="matrixDimensionsButton" buttonType="RAISED" layoutX="452.0" layoutY="192.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="105.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="Matrix dimension" textFill="WHITE" AnchorPane.bottomAnchor="160.0" AnchorPane.leftAnchor="450.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="215.0" />
+      <JFXButton fx:id="attractionsNumberButton" buttonType="RAISED" layoutX="452.0" layoutY="227.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="105.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="Attractions number" textFill="WHITE" AnchorPane.bottomAnchor="125.0" AnchorPane.leftAnchor="450.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="250.0" />
+      <ImageView fitHeight="150.0" fitWidth="150.0" layoutX="50.0" layoutY="150.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../res/icons/touristIconBlue.png" />
+         </image>
+      </ImageView>
+      <JFXButton fx:id="startButton" buttonType="RAISED" layoutX="300.0" layoutY="180.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="115.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="START SIMULATION" textAlignment="CENTER" textFill="WHITE" wrapText="true" AnchorPane.bottomAnchor="125.0" AnchorPane.topAnchor="180.0">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </JFXButton>
+   </children>
+</AnchorPane>
