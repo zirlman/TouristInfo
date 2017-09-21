@@ -1,8 +1,10 @@
 package net.etfbl.pj2.TouristInfo.user;
 
+import java.util.Objects;
+
 public class Location {
-    private int col;
-    private int row;
+    int col;
+    int row;
 
     public Location() {
         col = row = 0;
@@ -16,6 +18,16 @@ public class Location {
     @Override
     public String toString() {
         return "[" + row + "," + col + "]";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return col == ((Location) other).getCol() && row == ((Location) other).getRow();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(col, row);
     }
 
     public int getCol() {

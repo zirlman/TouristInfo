@@ -41,18 +41,25 @@ public class userAppController {
     private Label inputLabel;
     private Tooltip tt;
     private int touristNumber;
-    private int columnNumber;
-    private int rowNumber;
     private int attractionsNumber;
+    // Niz ikona iz kojeg se uzima ikona za inputStage u zavisnosti koje je dugme pritisnuto
     private Image imageArr[] =
             {new Image("res/icons/touristNumberIcon.png"),
                     new Image("res/icons/matrixIcon.png"), new Image("res/icons/attractionNumberIcon.png")};
-    private GridPane grid;
-    public static TextArea commentator = new TextArea();;
+    // Staticke metode kojima se pristupa u klasi Tourist
+    public static int columnNumber;
+    public static int rowNumber;
+    public static GridPane grid;
+    public static TextArea commentator = new TextArea();
+    public static Image tourist = new Image("res/icons/touristIcon30px.png");
+    public static Image attraction = new Image("res/icons/attractionIcon30px.png");
+    public static HashMap<Location, TouristAttraction> attractionsInMatrix = new HashMap<>();
 
     @FXML
     private void initialize() {
         startButton.setDisable(true);
+        touristNumberButton.setDisable(true);
+        attractionsNumberButton.setDisable(true);
         touristNumberButton.setOnAction(e -> touristForm());
         touristNumberButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
@@ -145,19 +152,21 @@ public class userAppController {
             try {
                 if (flag == 't') {
                     touristNumber = Integer.parseInt(no);
-                    if (touristNumber < 1)
+                    if (touristNumber < 1 || (touristNumber + attractionsNumber) > (rowNumber * columnNumber))
                         throw new NumberFormatException();
                 } else if (flag == 'a') {
                     attractionsNumber = Integer.parseInt(no);
-                    if (attractionsNumber < 1)
+                    if (attractionsNumber < 0 || (touristNumber + attractionsNumber) > (rowNumber * columnNumber))
                         throw new NumberFormatException();
                 } else if (flag == 'm') {
                     String coord[] = no.split(",");
                     if (coord.length == 2) {
-                        rowNumber = Integer.parseInt(coord[0]);
-                        columnNumber = Integer.parseInt(coord[1]);
-                        if (rowNumber < 1 || columnNumber < 1)
+                        rowNumber = Integer.parseInt(coord[0]) % 21;
+                        columnNumber = Integer.parseInt(coord[1]) % 21;
+                        if (rowNumber < 1 || columnNumber < 1 || (touristNumber + attractionsNumber) > (rowNumber * columnNumber))
                             throw new NumberFormatException();
+                        touristNumberButton.setDisable(false);
+                        attractionsNumberButton.setDisable(false);
                     } else
                         throw new NumberFormatException();
                 }
@@ -167,7 +176,7 @@ public class userAppController {
                 makeForm();
             } catch (NumberFormatException e) {
                 inputStage.close();
-                adminAppController.makeAlertWindow("Please enter a number.", "Invalid input", "ERROR");
+                adminAppController.makeAlertWindow("Please enter a valid input.", "Invalid input", "ERROR");
                 makeForm();
                 if (flag == 't')
                     touristForm();
@@ -178,7 +187,7 @@ public class userAppController {
 
             }
         }
-        if (touristNumber != 0 && attractionsNumber != 0 && rowNumber != 0 && columnNumber != 0) {
+        if (touristNumber != 0 && attractionsNumber >= 0 && rowNumber != 0 && columnNumber != 0) {
             startButton.setDisable(false);
             startButton.setOnAction(e -> startSimulation());
             startButton.setOnKeyPressed(e -> {
@@ -193,7 +202,8 @@ public class userAppController {
         Random positionGen = new Random();
         int col, row;
 
-        commentator.setPrefSize(400,100);
+        commentator.setPrefSize(400, 100);
+        commentator.setStyle("-fx-faint-focus-color: transparent; -fx-focus-color: WHITE;");
         grid = new GridPane();
         grid.setHgap(3);
         grid.setVgap(3);
@@ -202,17 +212,12 @@ public class userAppController {
         HBox hBox = new HBox(5);
         hBox.getChildren().addAll(grid, commentator);
 
-        Image tourist = new Image("res/icons/touristIcon30px.png");
-        Image attraction = new Image("res/icons/attractionIcon30px.png");
-
-        HashMap<TouristAttraction, Location> attractionsInMatrix = new HashMap<>();
-
         for (TouristAttraction ta : adminAppController.attractions) {
             col = positionGen.nextInt(columnNumber);
             row = positionGen.nextInt(rowNumber);
             if (attractionsNumber > 0 && adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
-                attractionsInMatrix.put(ta, new Location(col, row));
+                attractionsInMatrix.put(new Location(col, row), ta);
                 --attractionsNumber;
             }
         }
@@ -222,7 +227,7 @@ public class userAppController {
             row = positionGen.nextInt(rowNumber);
             if (adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
-                attractionsInMatrix.put(adminAppController.attractions.get(tmp++), new Location(col, row));
+                attractionsInMatrix.put(new Location(col, row), adminAppController.attractions.get(tmp++));
                 --attractionsNumber;
                 if (adminAppController.attractions.size() == tmp)
                     tmp = 0;
@@ -249,6 +254,7 @@ public class userAppController {
         simulationStage.getIcons().add(new Image("res/icons/simulationIcon.png"));
         simulationStage.initModality(Modality.APPLICATION_MODAL);
         simulationStage.show();
+        simulationStage.setOnCloseRequest(e -> commentator.clear());
 
     }
 
@@ -256,9 +262,8 @@ public class userAppController {
         for (int i = 0; i < rowNumber; ++i)
             for (int j = 0; j < columnNumber; ++j)
                 if (adminAppController.getNode(grid, i, j) == null) {
-                    Label label = new Label();
-                    label.setPrefSize(30, 30);
-                    grid.add(label, i, j);
+                    ImageView imageView = new ImageView("res/icons/touristIcon30pxWhite.png");
+                    grid.add(imageView, i, j);
                 }
     }
 

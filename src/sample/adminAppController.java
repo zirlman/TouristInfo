@@ -503,19 +503,15 @@ public class adminAppController {
                 stage.close();  // Zatvori prozor preko ESC ili ENTER
         });
         stage.setScene(scene);
-//        stage.setMinWidth(300);
-//        stage.setMinHeight(100);
-//        stage.setMaxWidth(300);
-//        stage.setMaxHeight(100);
         stage.initModality(Modality.APPLICATION_MODAL);                 // Blokiraj rad sa drugim prozorima sve dok se ovaj ne zatvori
         stage.initOwner(viewButton.getScene().getWindow());
         stage.getIcons().add(new Image("res/icons/imageIcon.png"));
         stage.showAndWait();
     }
 
-    static Node getNode(GridPane grid, int col, int row) {
+    public static synchronized Node getNode(GridPane grid, int col, int row) {
         for (Node node : grid.getChildren())
-            if (GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
+            if (grid.getColumnIndex(node) == col && grid.getRowIndex(node) == row)
                 return node;
         return null;
     }
