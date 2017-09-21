@@ -20,6 +20,7 @@ import net.etfbl.pj2.TouristInfo.attractions.TouristAttraction;
 import net.etfbl.pj2.TouristInfo.user.Location;
 import net.etfbl.pj2.TouristInfo.user.Tourist;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -54,27 +55,32 @@ public class userAppController {
     public static Image tourist = new Image("res/icons/touristIcon30px.png");
     public static Image attraction = new Image("res/icons/attractionIcon30px.png");
     public static HashMap<Location, TouristAttraction> attractionsInMatrix = new HashMap<>();
+    public static ArrayList<Tourist> touristsArr = new ArrayList<>();
 
     @FXML
     private void initialize() {
         startButton.setDisable(true);
         touristNumberButton.setDisable(true);
         attractionsNumberButton.setDisable(true);
+
         touristNumberButton.setOnAction(e -> touristForm());
         touristNumberButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
                 touristForm();
         });
+
         matrixDimensionsButton.setOnAction(e -> matrixForm());
         matrixDimensionsButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
                 matrixForm();
         });
+
         attractionsNumberButton.setOnAction(e -> attractionsForm());
         attractionsNumberButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
                 attractionsForm();
         });
+
         infoLabel.setText("  Enter tourist number,matrix dimensions and attractions number to start the simulation...");
         makeForm();
     }
@@ -199,7 +205,7 @@ public class userAppController {
 
     private void startSimulation() {      //TODO: Implementirati metodu
         adminAppController.deserialize();
-        Random positionGen = new Random();
+        Random LocationGen = new Random();
         int col, row;
 
         commentator.setPrefSize(400, 100);
@@ -213,8 +219,8 @@ public class userAppController {
         hBox.getChildren().addAll(grid, commentator);
 
         for (TouristAttraction ta : adminAppController.attractions) {
-            col = positionGen.nextInt(columnNumber);
-            row = positionGen.nextInt(rowNumber);
+            col = LocationGen.nextInt(columnNumber);
+            row = LocationGen.nextInt(rowNumber);
             if (attractionsNumber > 0 && adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
                 attractionsInMatrix.put(new Location(col, row), ta);
@@ -223,8 +229,8 @@ public class userAppController {
         }
         int tmp = 0;
         while (attractionsNumber > 0) {
-            col = positionGen.nextInt(columnNumber);
-            row = positionGen.nextInt(rowNumber);
+            col = LocationGen.nextInt(columnNumber);
+            row = LocationGen.nextInt(rowNumber);
             if (adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
                 attractionsInMatrix.put(new Location(col, row), adminAppController.attractions.get(tmp++));
@@ -234,15 +240,15 @@ public class userAppController {
             }
         }
         while (touristNumber > 0) {
-            col = positionGen.nextInt(columnNumber);
-            row = positionGen.nextInt(rowNumber);
+            col = LocationGen.nextInt(columnNumber);
+            row = LocationGen.nextInt(rowNumber);
             if (adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(tourist), col, row);
-                new Tourist(500, col, row).start();
+                touristsArr.add(new Tourist(500, col, row));
+                touristsArr.get(touristsArr.size() - 1).start();
                 --touristNumber;
             }
         }
-
         fillGrid();
 
         Group simulationGroup = new Group();
@@ -254,7 +260,10 @@ public class userAppController {
         simulationStage.getIcons().add(new Image("res/icons/simulationIcon.png"));
         simulationStage.initModality(Modality.APPLICATION_MODAL);
         simulationStage.show();
-        simulationStage.setOnCloseRequest(e -> commentator.clear());
+        simulationStage.setOnCloseRequest(e -> {
+            commentator.clear();
+            clearGrid();
+        });
 
     }
 
@@ -267,12 +276,12 @@ public class userAppController {
                 }
     }
 
-    private void clearGrid() {
+    public static void clearGrid() {
         if (grid != null) {
             for (int i = 0; i < rowNumber; ++i)
                 for (int j = 0; j < columnNumber; ++j)
-                    // if (adminAppController.getNode(grid, i, j) != null)
-                    grid.getChildren().remove(adminAppController.getNode(grid, i, j));
+                    if (adminAppController.getNode(grid, i, j) != null)
+                        grid.getChildren().remove(adminAppController.getNode(grid, i, j));
         }
     }
 }

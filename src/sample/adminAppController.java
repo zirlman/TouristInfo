@@ -136,7 +136,7 @@ public class adminAppController {
 //        locationCol.setCellFactory(TextFieldTableCell.forTableColumn());
 //        locationCol.setOnEditCommit((
 //                TableColumn.CellEditEvent<TouristAttraction, String> t) ->
-//                (t.getTableView().getItems().get(t.getTablePosition().getRow())).setLocation(t.getNewValue()));
+//                (t.getTableView().getItems().get(t.getTableLocation().getRow())).setLocation(t.getNewValue()));
         TableColumn<TouristAttraction, String> attractionCol = new TableColumn<>("Tourist Attraction");
         attractionCol.setMinWidth(150);
         attractionCol.setMaxWidth(150);
@@ -575,6 +575,7 @@ public class adminAppController {
             stage.setResizable(false);
             stage.getIcons().add(new Image("res/icons/touristIcon.png"));
             viewButton.getScene().getWindow().hide();
+            stage.setOnCloseRequest(e -> userAppController.clearGrid());
             stage.show();
         } catch (IOException e) {
             System.out.println("USER SWITCH IOEXCEPTION");

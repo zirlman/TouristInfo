@@ -33,15 +33,15 @@ public class Tourist extends Thread {
     private boolean done;
     private boolean movementFlag;
     private char leftOrRightFlag;
-    private boolean firstUpdateFlag = true;
     private boolean restoreImageFlag = false;
+    private Location oldLocation = new Location();
 
     public Tourist(int m, int col, int row) {
         name = Name.randomVal().toString();
         money = m > 0 ? m : (-1) * m;
-        movement = Movement.ONE_ROW;//Movement.randomVal();
+        movement = Movement.randomVal();
         location = new Location(col, row);
-        timeOfMovement = new Random().nextInt(6000) + 1000; // Treba 6000 kao bound
+        timeOfMovement = new Random().nextInt(1000) + 1000; // Treba 6000 kao bound
         movementFlag = true;
         generateFolders();
     }
@@ -52,129 +52,135 @@ public class Tourist extends Thread {
         while (!done)
             try {
                 sleep(timeOfMovement);
-                updatePosition();
+                updateLocation();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         System.out.println("DONE !!!");
     }
 
-    private void updatePosition() {
-        if (movement.equals(Movement.ONE_ROW)) {
+    private void updateLocation() {
+        oldLocation.col = location.col;
+        oldLocation.row = location.row;
+        if (movement.equals(Movement.ONE_ROW))
+            moveInRow();
+        else if (movement.equals(Movement.DIAGONAL))
+            moveDiagonal();
+        else if (movement.equals(Movement.WHOLE_MATRIX))
+            moveThroughMatrix();
+    }
+
+    private void moveInRow() {
+        ++location.col;
+        if (location.col == userAppController.columnNumber) {
+            done = true;
+            Platform.runLater(() -> updateOldLocation(userAppController.grid));
+        } else if (!userAppController.attractionsInMatrix.containsKey(location)) {
+            Platform.runLater(() -> {
+                Platform.runLater(() -> updateOldLocation(userAppController.grid));
+                ((ImageView) adminAppController.getNode(userAppController.grid, location.col, location.row)).setImage(userAppController.tourist);
+            });
+        } else
+            Platform.runLater(() -> {
+                updateOldLocation(userAppController.grid);
+                handleAttraction(userAppController.grid, location.col, location.row);
+            });
+    }
+
+    private void moveDiagonal() {
+        if (movementFlag) {
+            leftOrRightFlag = location.col > (userAppController.rowNumber / 2) ? 'L' : 'R';
+            movementFlag = false;
+        }
+        if (leftOrRightFlag == 'L')
+            --location.col;
+        else
             ++location.col;
-            if (location.col == userAppController.columnNumber) {
-                done = true;
-                Platform.runLater(() -> updateOldPosition(userAppController.grid, location.col - 1, location.row));
-            } else if (!userAppController.attractionsInMatrix.containsKey(location)) {
-                Platform.runLater(() -> {
-                    updateOldPosition(userAppController.grid, location.col - 1, location.row);
-                    ((ImageView) adminAppController.getNode(userAppController.grid, location.col, location.row)).setImage(userAppController.tourist);
-                });
-            } else {
-                Platform.runLater(() -> {
-                    updateOldPosition(userAppController.grid, location.col - 1, location.row);
-                    handleAction(userAppController.grid, location.col, location.row);
-                });
-            }
-//        } else if (movement.equals(Movement.DIAGONAL)) {
-//            if (movementFlag) {
-//                leftOrRightFlag = location.row > (userAppController.rowNumber / 2) ? 'L' : 'R';
-//                movementFlag = false;
-//            }
-//            if (leftOrRightFlag == 'L')
-//                --location.col;
-//            else
-//                ++location.col;
-//            ++location.row;
-//            if (location.row == userAppController.rowNumber || location.col < 0 || location.col == userAppController.columnNumber) {
-//                done = true;
-//                if (!restoreImageFlag)
-//                    updatePostionForDiagonalMovement(userAppController.grid);
-//            } else if (!userAppController.attractionsInMatrix.containsKey(location)) { // Ako se ne nalazi atrakcija na location, azuriraj pozicije
-//                Platform.runLater(() -> userAppController.grid.add(new ImageView(userAppController.tourist), location.col, location.row));
-//                updatePostionForDiagonalMovement(userAppController.grid);
-//            } else {
-//                updatePostionForDiagonalMovement(userAppController.grid);
-//                handleAction(userAppController.grid, location.col, location.row);
-//            }
-//        } else if (movement.equals(Movement.WHOLE_MATRIX)) {
-//            boolean tempFlag = false;           // Ukoliko je tempFlag == true onda je Node vec obrisan
-//            ++location.col;
-//            if (location.col > userAppController.columnNumber) {
-//                Platform.runLater(() -> updateOldPosition(userAppController.grid, location.col - 1, location.row));
-//                location.col = 0;
-//                ++location.row;
-//                tempFlag = true;
-//            }
-//            if (location.row == userAppController.rowNumber) {
-//                done = true;
-//                if (!restoreImageFlag && !tempFlag)
-//                    Platform.runLater(() -> updateOldPosition(userAppController.grid, location.col - 1, location.row - 1));
-//            } else if (!userAppController.attractionsInMatrix.containsKey(location)) {
-//                Platform.runLater(() -> userAppController.grid.add(new ImageView(userAppController.tourist), location.col, location.row));
-//                if (!tempFlag)
-//                    Platform.runLater(() -> updateOldPosition(userAppController.grid, location.col - 1, location.row - 1));
-//            } else {
-//                handleAction(userAppController.grid, location.col, location.row);
-//                if (!tempFlag)
-//                    Platform.runLater(() -> updateOldPosition(userAppController.grid, location.col - 1, location.row - 1));
-//            }
+        ++location.row;
+        if (location.row == userAppController.rowNumber || location.col < 0 || location.col == userAppController.columnNumber) {
+            done = true;
+            updateOldLocation(userAppController.grid);
+        } else if (!userAppController.attractionsInMatrix.containsKey(location)) { // Ako se ne nalazi atrakcija na location, azuriraj pozicije
+            Platform.runLater(() -> {
+                updateOldLocation(userAppController.grid);
+                ((ImageView) adminAppController.getNode(userAppController.grid, location.col, location.row)).setImage(userAppController.tourist);
+            });
+        } else {
+            Platform.runLater(() -> {
+                updateOldLocation(userAppController.grid);
+                handleAttraction(userAppController.grid, location.col, location.row);
+            });
         }
     }
 
-    private void updateOldPosition(GridPane grid, int col, int row) {
-        if (!restoreImageFlag) {
-            ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
-            if (iv.getImage() != null)
-                iv.setImage(new Image("res/icons/touristIcon30pxWhite.png"));
+    private void moveThroughMatrix() {
+        location.col = (location.col + 1) % userAppController.columnNumber;
+        location.row = location.col == 0 ? location.row + 1 : location.row;          // Ako je location.col == 0 treba preci u novi red
+        if (location.row == userAppController.rowNumber) {
+            done = true;
+            updateOldLocation(userAppController.grid);
+        } else if (!userAppController.attractionsInMatrix.containsKey(location)) {
+            updateOldLocation(userAppController.grid);
+            Platform.runLater(() -> ((ImageView) adminAppController.getNode(userAppController.grid, location.col, location.row)).setImage(userAppController.tourist));
         } else {
-            restoreImage(grid, col, row);
+            Platform.runLater(() -> updateOldLocation(userAppController.grid));
+            handleAttraction(userAppController.grid, location.col, location.row);
+        }
+    }
+
+    private void updateOldLocation(GridPane grid) {
+        if (!restoreImageFlag) {
+            ImageView iv = (ImageView) adminAppController.getNode(grid, oldLocation.col, oldLocation.row);
+            try {
+                iv.setImage(new Image("res/icons/touristIcon30pxWhite.png"));
+            } catch (NullPointerException e) {
+                System.out.println("EROR @ " + oldLocation + " SETIMAGE NULLPOINTEREXC");
+            }
+        } else {
+            restoreImage(grid, oldLocation.col, oldLocation.row);
             restoreImageFlag = false;
         }
     }
 
-    private void handleAction(GridPane grid, int col, int row) {
+    private void handleAttraction(GridPane grid, int col, int row) {
         TouristAttraction ta = userAppController.attractionsInMatrix.get(location);
-        userAppController.commentator.appendText(name + " @ " + ta.getName() + ", location: " + location + "\n");
-        if (ta instanceof HistoricalMonument) {
-            restoreImageFlag = true;
-            Platform.runLater(() -> {
-                ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
-                if (iv != null)
-                    iv.setImage(new Image("res/icons/shootingAttractionIcon.png"));
-                Stage stage = new Stage();
-                Group group = new Group();
-                group.getChildren().add(new ImageView(((HistoricalMonument) ta).getImage()));
-                stage.setScene(new Scene(group));
-                stage.setX(50);
-                stage.setY(50);
-                stage.getIcons().add(new Image("res/icons/imageIcon.png"));
-                stage.show();
-                PauseTransition delay = new PauseTransition(Duration.seconds(3));
-                delay.setOnFinished(e -> stage.close());
-                delay.play();
-            });
-        } else if (ta instanceof Museum) {
-            restoreImageFlag = true;
-            //TODO: nastavi
-        } else if (ta instanceof AmusementPark) {
-            restoreImageFlag = true;
-        } else if (ta instanceof Church) {
-            restoreImageFlag = true;
+        try {
+            userAppController.commentator.appendText(name + " @ " + ta.getName() + ", location: " + location + "\n");
+            if (ta instanceof HistoricalMonument) {
+                restoreImageFlag = true;
+                Platform.runLater(() -> {
+                    ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
+                    if (iv != null)
+                        iv.setImage(new Image("res/icons/shootingAttractionIcon.png"));
+                    Stage stage = new Stage();
+                    Group group = new Group();
+                    group.getChildren().add(new ImageView(((HistoricalMonument) ta).getImage()));
+                    stage.setScene(new Scene(group));
+                    stage.setX(50);
+                    stage.setY(50);
+                    stage.getIcons().add(new Image("res/icons/imageIcon.png"));
+                    stage.show();
+                    PauseTransition delay = new PauseTransition(Duration.seconds(3));
+                    delay.setOnFinished(e -> stage.close());
+                    delay.play();
+                });
+            } else if (ta instanceof Museum) {
+                restoreImageFlag = true;
+                //TODO: nastavi
+            } else if (ta instanceof AmusementPark) {
+                restoreImageFlag = true;
+            } else if (ta instanceof Church) {
+                restoreImageFlag = true;
+            }
+        } catch (NullPointerException e) {
+            System.out.println("NULLPOINTER EXCEPTION");
         }
-    }
-
-    private void updatePostionForDiagonalMovement(GridPane grid) {
-        if (leftOrRightFlag == 'L')
-            Platform.runLater(() -> updateOldPosition(grid, location.col + 1, location.row - 1));
-        else
-            Platform.runLater(() -> updateOldPosition(grid, location.col - 1, location.row - 1));
     }
 
     private void restoreImage(GridPane grid, int col, int row) {
         ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
         if (iv != null)
-            iv.setImage(new Image("res/icons/attractionIcon30px.png"));
+            Platform.runLater(() -> iv.setImage(new Image("res/icons/attractionIcon30px.png")));
     }
 
     private void generateFolders() {
