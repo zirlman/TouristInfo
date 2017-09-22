@@ -6,13 +6,13 @@ import java.time.LocalDate;
 import java.util.Random;
 
 public class Museum extends TouristAttraction {
-    private String flier;
+    private String flyer;
     private PayMethod payMethod;
     private int price;
 
     public Museum(String n, String l, String f) {
         super(n, l);
-        flier = f;
+        flyer = f;
         payMethod = ((LocalDate.now().getDayOfWeek().getValue() % 2) == 1) ? PayMethod.PAID : PayMethod.FREE;   // Ako je neparan dan ulaz se naplacuje
         price = (payMethod == PayMethod.PAID) ? new Random().nextInt(71) + 10 : 0;                      // Ako je neparan dan, cijena se automatski generise
 
@@ -23,15 +23,15 @@ public class Museum extends TouristAttraction {
         return price;
     }
 
-    public String getFlier() {
-        return flier;
+    public String getFlyer() {
+        return flyer;
     }
 
     public PayMethod getPayMethod() {
         return payMethod;
     }
 
-    public void setFlier(String flier) {
-        this.flier = flier;
+    public void setflyer(String flyer) {
+        this.flyer = flyer;
     }
 }

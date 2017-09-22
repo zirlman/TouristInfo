@@ -1,4 +1,5 @@
 package net.etfbl.pj2.TouristInfo.attractions;
+
 import net.etfbl.pj2.TouristInfo.enums.PayMethod;
 
 public class Church extends TouristAttraction {
@@ -22,5 +23,9 @@ public class Church extends TouristAttraction {
 
     public int getCollectedMoney() {
         return collectedMoney;
+    }
+
+    public void setCollectedMoney(int collectedMoney) {
+        this.collectedMoney = collectedMoney;
     }
 }

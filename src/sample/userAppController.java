@@ -2,27 +2,33 @@ package sample;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.etfbl.pj2.TouristInfo.attractions.TouristAttraction;
 import net.etfbl.pj2.TouristInfo.user.Location;
 import net.etfbl.pj2.TouristInfo.user.Tourist;
 
-import java.util.ArrayList;
+import java.io.*;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
+
+import static javafx.beans.binding.Bindings.format;
 
 public class userAppController {
     @FXML
@@ -33,6 +39,8 @@ public class userAppController {
     private JFXButton attractionsNumberButton;
     @FXML
     private JFXButton startButton;
+    @FXML
+    public JFXButton showResultsButton;
     @FXML
     private Label infoLabel;
 
@@ -55,26 +63,47 @@ public class userAppController {
     public static Image tourist = new Image("res/icons/touristIcon30px.png");
     public static Image attraction = new Image("res/icons/attractionIcon30px.png");
     public static HashMap<Location, TouristAttraction> attractionsInMatrix = new HashMap<>();
-    public static ArrayList<Tourist> touristsArr = new ArrayList<>();
+    public static ObservableList<Tourist> touristsArr = FXCollections.observableArrayList();
+    public static boolean doneSimulation;
+    public static boolean forcedClose;
+    private static Stage simulationStage;
+    private static Stage tableStage;
+    private static TableView<Tourist> table;
 
     @FXML
     private void initialize() {
         startButton.setDisable(true);
-        touristNumberButton.setDisable(true);
-        attractionsNumberButton.setDisable(true);
 
+        showResultsButton.setOnAction(e -> {
+            if (!forcedClose && doneSimulation)
+                finishSimulation();
+            else
+                adminAppController.makeAlertWindow("Start simulation and wait for it to finish.\nDon't close the window !!!", "Invalid request", "ERROR");
+        });
+        showResultsButton.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER)
+                if (doneSimulation)
+                    finishSimulation();
+                else
+                    adminAppController.makeAlertWindow("Start/Wait for the simulation to finish", "Invalid request", "ERROR");
+        });
+
+        touristNumberButton.setDisable(true);
         touristNumberButton.setOnAction(e -> touristForm());
         touristNumberButton.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER)
+            if (e.getCode() == KeyCode.ENTER) {
                 touristForm();
+            }
         });
 
         matrixDimensionsButton.setOnAction(e -> matrixForm());
         matrixDimensionsButton.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER)
+            if (e.getCode() == KeyCode.ENTER) {
                 matrixForm();
+            }
         });
 
+        attractionsNumberButton.setDisable(true);
         attractionsNumberButton.setOnAction(e -> attractionsForm());
         attractionsNumberButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
@@ -177,7 +206,7 @@ public class userAppController {
                         throw new NumberFormatException();
                 }
                 inputStage.close();
-                adminAppController.makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                adminAppController.makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                 clearGrid();
                 makeForm();
             } catch (NumberFormatException e) {
@@ -207,6 +236,7 @@ public class userAppController {
         adminAppController.deserialize();
         Random LocationGen = new Random();
         int col, row;
+        Tourist.setTotalAttractions(attractionsNumber);
 
         commentator.setPrefSize(400, 100);
         commentator.setStyle("-fx-faint-focus-color: transparent; -fx-focus-color: WHITE;");
@@ -253,7 +283,7 @@ public class userAppController {
 
         Group simulationGroup = new Group();
         simulationGroup.getChildren().add(hBox);
-        Stage simulationStage = new Stage();
+        simulationStage = new Stage();
         simulationStage.setResizable(false);
         simulationStage.setTitle("App simulation");
         simulationStage.setScene(new Scene(simulationGroup));
@@ -261,10 +291,105 @@ public class userAppController {
         simulationStage.initModality(Modality.APPLICATION_MODAL);
         simulationStage.show();
         simulationStage.setOnCloseRequest(e -> {
+            forcedClose = true;
             commentator.clear();
             clearGrid();
         });
+    }
 
+    public static void finishSimulation() {
+        if (doneSimulation) {
+            TableColumn<Tourist, String> nameCol = new TableColumn<>("Name");
+            nameCol.setMinWidth(200);
+            nameCol.setMaxWidth(200);
+            nameCol.setCellValueFactory(new PropertyValueFactory<>("touristName"));
+
+            TableColumn<Tourist, Integer> collectedFlyersCol = new TableColumn<>("Collected flyers");
+            collectedFlyersCol.setMinWidth(200);
+            collectedFlyersCol.setMaxWidth(200);
+            collectedFlyersCol.setCellValueFactory(new PropertyValueFactory<>("collectedFlyers"));
+
+            TableColumn<Tourist, String> visitedAttractionsCol = new TableColumn<>("Visited attractions (%)");
+            visitedAttractionsCol.setMinWidth(200);
+            visitedAttractionsCol.setMaxWidth(200);
+            visitedAttractionsCol.setCellValueFactory(cellData -> format("%.2f", cellData.getValue().getVisitedAttractions()));
+
+            Label label = new Label();
+            label.setPadding(new Insets(2, 0, 0, 0));
+
+            JFXButton showFlyerButton = new JFXButton();
+            showFlyerButton.setDisable(true);
+            adminAppController.setButtonStyle(showFlyerButton, "Show flyer");
+            showFlyerButton.setOnAction(e -> showFlyer());
+
+            JFXButton saveResultsButton = new JFXButton();
+            adminAppController.setButtonStyle(saveResultsButton, "Save results");
+            saveResultsButton.setOnAction(e -> {
+                saveResults();
+                label.setText("Successful");
+            });
+
+            touristsArr.sort(Comparator.comparingInt(Tourist::getCollectedFlyers).reversed());
+            table = new TableView<>();
+            table.setEditable(true);
+            table.setItems(touristsArr);
+            table.getColumns().addAll(nameCol, collectedFlyersCol, visitedAttractionsCol);
+            table.setOnMouseClicked(e -> showFlyerButton.setDisable(false));
+
+            ScrollPane scrollPane = new ScrollPane(table);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);     // TODO: onemoguciti prikaz horizontalBar-a !!!
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+
+            Region region = new Region();
+            region.setPrefWidth(220);
+
+            HBox hBox = new HBox();
+            hBox.setPadding(new Insets(10, 10, 10, 10));
+            hBox.setSpacing(10);
+            hBox.getChildren().addAll(region, showFlyerButton, saveResultsButton, label);
+
+            VBox vBox = new VBox();
+            vBox.getChildren().addAll(scrollPane, hBox);
+
+            tableStage = new Stage();                                 // TODO: Onemoguciti promjenu redoslijeda kolona u table-u !!!
+            tableStage.setTitle("Results");
+            tableStage.setScene(new Scene(vBox));
+            tableStage.getIcons().add(new Image("res/icons/tableIcon.png"));
+            tableStage.setResizable(false);
+            tableStage.show();
+        }
+    }
+
+    private static void showFlyer() {
+        Tourist t = table.getSelectionModel().getSelectedItem();
+        File file = t.getFlyersFolder();
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            try (BufferedReader br = new BufferedReader(new FileReader(files[new Random().nextInt(files.length)]))) {
+                TextArea ta = new TextArea();
+                String s;
+                while ((s = br.readLine()) != null)
+                    ta.appendText(s);
+                Stage stage = new Stage();
+                stage.setScene(new Scene(ta));
+                stage.setTitle("Museum flyer");
+                stage.getIcons().add(new Image("res/icons/flyerIcon.png"));
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.initOwner(tableStage);
+                stage.showAndWait();
+            } catch (IOException | NullPointerException e) {
+            }
+        }
+    }
+
+    private static void saveResults() {
+        File file = new File("Results.csv");
+        try (PrintWriter pw = new PrintWriter(file)) {
+            for (Tourist t : table.getItems())
+                pw.println(t.getTouristName() + "," + t.getCollectedFlyers() + "," + t.getVisitedAttractions());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void fillGrid() {
@@ -276,7 +401,7 @@ public class userAppController {
                 }
     }
 
-    public static void clearGrid() {
+    static void clearGrid() {
         if (grid != null) {
             for (int i = 0; i < rowNumber; ++i)
                 for (int j = 0; j < columnNumber; ++j)

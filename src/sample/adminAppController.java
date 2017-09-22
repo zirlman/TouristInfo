@@ -60,6 +60,8 @@ public class adminAppController {
 
     @FXML
     private void initialize() {
+        clearDirectory(new File("Names"));      // Obrisi stari sadrzaj direktorijum kao i sam direktorijum
+        new File("Names").mkdir();              // Napravi novi direktorijum
         makeTable();
         deserialize();
         taComboBox.getItems().addAll(tourristAttractions);
@@ -86,7 +88,7 @@ public class adminAppController {
         });
         viewButton.setOnAction(e -> {
             if (attractions.isEmpty())
-                makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "ALERT");
+                makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "WARNING");
             else {
                 if (tableFlag == 0) {
                     tableStage.initOwner(viewButton.getScene().getWindow());
@@ -97,7 +99,7 @@ public class adminAppController {
         viewButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
                 if (attractions.isEmpty())
-                    makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "ALERT");
+                    makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "WARNING");
                 else {
                     if (tableFlag == 0) {
                         tableStage.initOwner(viewButton.getScene().getWindow());
@@ -133,10 +135,7 @@ public class adminAppController {
         locationCol.setMaxWidth(200);
         locationCol.setCellValueFactory(new PropertyValueFactory<>("location"));    // uzima vrijendost reference location i smjesta je u kolonu
         locationCol.setSortable(false);
-//        locationCol.setCellFactory(TextFieldTableCell.forTableColumn());
-//        locationCol.setOnEditCommit((
-//                TableColumn.CellEditEvent<TouristAttraction, String> t) ->
-//                (t.getTableView().getItems().get(t.getTableLocation().getRow())).setLocation(t.getNewValue()));
+
         TableColumn<TouristAttraction, String> attractionCol = new TableColumn<>("Tourist Attraction");
         attractionCol.setMinWidth(150);
         attractionCol.setMaxWidth(150);
@@ -148,10 +147,8 @@ public class adminAppController {
         table.getColumns().addAll(attractionCol, nameCol, locationCol);
         setTableContextMenu();
         table.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.SECONDARY) {
-                // Prikazi contextMenu za edit ili remove ukoliko je desni klik pritisnut
-                table.getContextMenu().show(table, event.getScreenX(), event.getScreenY());
-            }
+            if (event.getButton() == MouseButton.SECONDARY)
+                table.getContextMenu().show(table, event.getScreenX(), event.getScreenY());     // Prikazi contextMenu za edit ili remove ukoliko je desni klik pritisnut
         });
 
         ScrollPane scrollPane = new ScrollPane(table);
@@ -170,13 +167,16 @@ public class adminAppController {
 
     static void makeAlertWindow(String text, String header, String title) {
         try {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle(title);
-            alert.setHeaderText(header);
-            alert.setContentText(text);
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("res/icons/errorIcon.png"));
-            alert.showAndWait();
+            switch (title) {
+                case "WARNING":
+                    makeAlert(new Alert(Alert.AlertType.WARNING), text, header, title);
+                    break;
+                case "INFORMATION":
+                    makeAlert(new Alert(Alert.AlertType.INFORMATION), text, header, title);
+                    break;
+                case "ERROR":
+                    makeAlert(new Alert(Alert.AlertType.ERROR), text, header, title);
+            }
             //TODO: Obrisati komentare
 //            Label label = new Label();
 //            label.setText(text);
@@ -205,6 +205,15 @@ public class adminAppController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void makeAlert(Alert alert, String text, String header, String title) {
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(text);
+        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+        alertStage.getIcons().add(new Image("res/icons/errorIcon.png"));
+        alert.showAndWait();
     }
 
     private void makeAttractionWindow() {
@@ -264,6 +273,7 @@ public class adminAppController {
                     editAttraction(gridPane, newAttraction);
             }
         });
+
         JFXButton cancel = new JFXButton();
         setButtonStyle(cancel, "Cancel");
         cancel.setOnAction(e -> {
@@ -275,15 +285,20 @@ public class adminAppController {
         hBox.setPadding(new Insets(10, 10, 0, 0));
         hBox.setSpacing(10);
         hBox.getChildren().addAll(submit, cancel);
+
+        if (createOrEditFlag.equals("edit")) {
+            ((JFXTextField) getNode(gridPane, 1, 0)).setText(attractions.get(attractionIndex).getName());
+            ((JFXTextField) getNode(gridPane, 1, 1)).setText(attractions.get(attractionIndex).getLocation());
+        }
         switch (newAttraction) {
             case "HistoricalMonument":
-                historicalMonumentForm(gridPane, hBox);
+                historicalMonumentForm(gridPane, hBox, createOrEditFlag);
                 break;
             case "Museum":
-                museumForm(gridPane, hBox);
+                museumForm(gridPane, hBox, createOrEditFlag);
                 break;
             case "AmusementPark":
-                amusementParkForm(gridPane, hBox);
+                amusementParkForm(gridPane, hBox, createOrEditFlag);
                 break;
             case "Church":
                 churchForm(gridPane, hBox);
@@ -301,7 +316,7 @@ public class adminAppController {
                 if (!name.isEmpty() && !location.isEmpty() && !description.isEmpty() && file != null) {
                     attractions.add(new HistoricalMonument(name, location, description, file));
                     attractionStage.close();
-                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                     viewImage(file);
                     file = null;
                     serialize();
@@ -311,7 +326,7 @@ public class adminAppController {
                 if (!name.isEmpty() && !location.isEmpty() && file != null) {
                     attractions.add(new Museum(name, location, file));
                     attractionStage.close();
-                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                     file = null;
                     serialize();
                 }
@@ -325,7 +340,7 @@ public class adminAppController {
                                 Integer tmp = Integer.parseInt(price);
                                 attractions.add(new AmusementPark(name, location, tmp));
                                 attractionStage.close();
-                                makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                                makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                                 serialize();
                             } catch (NumberFormatException e) {
                                 attractionStage.close();
@@ -336,7 +351,7 @@ public class adminAppController {
                         else {
                             attractions.add(new AmusementPark(name, location));
                             attractionStage.close();
-                            makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                            makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                             serialize();
                         }
                     } catch (NullPointerException e) {
@@ -376,7 +391,7 @@ public class adminAppController {
                     Museum mm = (Museum) attractions.get(attractionIndex);
                     mm.setName(name);
                     mm.setLocation(location);
-                    mm.setFlier(file);
+                    mm.setflyer(file);
                     file = null;
                 }
                 break;
@@ -414,7 +429,7 @@ public class adminAppController {
         serialize();
     }
 
-    private void historicalMonumentForm(GridPane gridPane, HBox hBox) {
+    private void historicalMonumentForm(GridPane gridPane, HBox hBox, String createOrEditFlag) {
         Label descriptionLabel = new Label("Description:");
         descriptionLabel.setPadding(new Insets(5, 5, 5, 5));
 
@@ -424,10 +439,17 @@ public class adminAppController {
         Label imageName = new Label();
         imageName.setPadding(new Insets(5, 5, 5, 5));
         gridPane.add(imageName, 2, 3, 2, 1);
+        if (createOrEditFlag.equals("edit")) {
+            File f = new File(((HistoricalMonument) attractions.get(attractionIndex)).getImage().replace("file:/", ""));
+            imageName.setText(f.getName());
+        }
 
         JFXTextArea descriptionTextArea = new JFXTextArea();
         descriptionTextArea.setPadding(new Insets(5, 0, 5, 0));
-        descriptionTextArea.setPromptText("Enter description");
+        if (createOrEditFlag.equals("edit"))
+            descriptionTextArea.setText(((HistoricalMonument) attractions.get(attractionIndex)).getDescription());
+        else
+            descriptionTextArea.setPromptText("Enter description");
 
         JFXButton imageButton = new JFXButton();
         setButtonStyle(imageButton, "Upload image");
@@ -441,28 +463,35 @@ public class adminAppController {
         gridPane.add(hBox, 2, 4);
     }
 
-    private void museumForm(GridPane gridPane, HBox hBox) {
-        Label flierLabel = new Label("Flier upload:");
-        flierLabel.setPadding(new Insets(5, 5, 5, 5));
+    private void museumForm(GridPane gridPane, HBox hBox, String createOrEditFlag) {
+        Label flyerLabel = new Label("flyer upload:");
+        flyerLabel.setPadding(new Insets(5, 5, 5, 5));
 
-        Label flierName = new Label();
-        flierName.setPadding(new Insets(5, 5, 5, 5));
-        gridPane.add(flierName, 1, 3, 3, 1);
+        Label flyerName = new Label();
+        flyerName.setPadding(new Insets(5, 5, 5, 5));
+        gridPane.add(flyerName, 1, 3, 3, 1);
 
-        JFXButton flierButton = new JFXButton();
-        setButtonStyle(flierButton, "Upload flier");
-        flierButton.setOnAction(e -> addFile(flierName));
+        JFXButton flyerButton = new JFXButton();
+        setButtonStyle(flyerButton, "Upload flyer");
+        flyerButton.setOnAction(e -> addFile(flyerName));
 
-        gridPane.add(flierLabel, 0, 2);
-        gridPane.add(flierButton, 1, 2);
+        if (createOrEditFlag.equals("edit")) {
+            File f = new File(((Museum) attractions.get(attractionIndex)).getFlyer().replace("file:/", ""));
+            flyerName.setText(f.getName());
+        }
+
+        gridPane.add(flyerLabel, 0, 2);
+        gridPane.add(flyerButton, 1, 2);
         gridPane.add(hBox, 1, 4);
     }
 
-    private void amusementParkForm(GridPane gridPane, HBox hBox) {
+    private void amusementParkForm(GridPane gridPane, HBox hBox, String createOrEditFlag) {
         Label priceLabel = new Label("Entry price:");
         priceLabel.setPadding(new Insets(5, 5, 5, 5));
 
         JFXTextField priceTextField = new JFXTextField();
+        if (createOrEditFlag.equals("edit"))
+            priceTextField.setText(((AmusementPark) attractions.get(attractionIndex)).getPrice() + "");
         priceTextField.setPromptText("Enter entry price");
 
         gridPane.add(priceLabel, 0, 2);
@@ -509,9 +538,9 @@ public class adminAppController {
         stage.showAndWait();
     }
 
-    public static synchronized Node getNode(GridPane grid, int col, int row) {
+    public static Node getNode(GridPane grid, int col, int row) {
         for (Node node : grid.getChildren())
-            if (grid.getColumnIndex(node) == col && grid.getRowIndex(node) == row)
+            if (GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row)
                 return node;
         return null;
     }
@@ -533,7 +562,7 @@ public class adminAppController {
             serialize();
             if (attractions.isEmpty()) {
                 tableStage.close();
-                makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "ALERT");
+                makeAlertWindow("Table is empty!\nPlease add attractions to it.", "Empty table", "WARNING");
             }
         });
 
@@ -558,10 +587,10 @@ public class adminAppController {
         } catch (FileNotFoundException e) {
             //e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (IOException e) {
             System.out.println("IOEXCEPTION IN DESERIALIZE !!!");
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -580,6 +609,19 @@ public class adminAppController {
         } catch (IOException e) {
             System.out.println("USER SWITCH IOEXCEPTION");
             e.printStackTrace();
+        }
+    }
+
+    private void clearDirectory(File folder) {
+        if (folder.exists()) {
+            File files[] = folder.listFiles();
+            if (files != null)
+                for (File f : files)
+                    if (f.isDirectory())
+                        clearDirectory(f);
+                    else
+                        f.delete();
+            folder.delete();
         }
     }
 }
