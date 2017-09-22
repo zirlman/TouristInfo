@@ -232,7 +232,7 @@ public class userAppController {
         }
     }
 
-    private void startSimulation() {      //TODO: Implementirati metodu
+    private void startSimulation() {
         adminAppController.deserialize();
         Random LocationGen = new Random();
         int col, row;

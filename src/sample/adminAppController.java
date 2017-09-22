@@ -41,12 +41,6 @@ public class adminAppController {
     private JFXButton startButton;
     @FXML
     private JFXComboBox<String> taComboBox;
-    /*private ObservableList<TouristAttraction> tourristAttractions
-            = FXCollections.observableArrayList(
-            new HistoricalMonument("Cathedral of Christ the Saviour", "Banja Luka"),
-            new Museum("Museum of Modern Art of Republika Srpska", "Banja Luka"),
-            new AmusementPark("Aquana", "Banja Luka"),
-            new Church("Holy Trinity Church", "Banja Luka"));*/
     private ObservableList<String> tourristAttractions = FXCollections.observableArrayList("Historical Monument", "Museum", "Amusement Park", "Church");
     static ObservableList<TouristAttraction> attractions = FXCollections.observableArrayList();
     private TableView table;
@@ -108,8 +102,12 @@ public class adminAppController {
                 }
         });
         startButton.setOnAction(e -> {
-            serialize();
-            switchToUser();
+            if (attractions.isEmpty())
+                makeAlertWindow("Table is empty!\nPlease add attractions to start the simulation.", "Empty table", "WARNING");
+            else {
+                serialize();
+                switchToUser();
+            }
         });
         startButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
@@ -177,31 +175,6 @@ public class adminAppController {
                 case "ERROR":
                     makeAlert(new Alert(Alert.AlertType.ERROR), text, header, title);
             }
-            //TODO: Obrisati komentare
-//            Label label = new Label();
-//            label.setText(text);
-//            System.out.println(label.getText());
-//            label.setAlignment(Pos.CENTER);
-//            label.setTextAlignment(TextAlignment.CENTER);
-//            label.setPadding(new Insets(10, 10, 10, 30));
-//
-//            Pane alertPane = new Pane();
-//            alertPane.getChildren().add(label);
-//            alertStage = new Stage();
-//            alertStage.setTitle(title);
-//            Scene scene = new Scene(alertPane, 300, 100);         // Zatvori prozor preko ESC ili ENTER
-//            scene.setOnKeyPressed(e -> {
-//                if (e.getCode() == KeyCode.ESCAPE || e.getCode() == KeyCode.ENTER) alertStage.close();
-//            });
-//            alertStage.setScene(scene);
-//            alertStage.setMinWidth(300);
-//            alertStage.setMinHeight(100);
-//            alertStage.setMaxWidth(300);
-//            alertStage.setMaxHeight(100);
-//            alertStage.initModality(Modality.APPLICATION_MODAL);                 // Blokiraj rad sa drugim prozorima sve dok se ovaj ne zatvori
-//            alertStage.initOwner(viewButton.getScene().getWindow());
-//            alertStage.getIcons().add(new Image("res/icons/errorIcon.png"));
-//            alertStage.showAndWait();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -212,7 +185,7 @@ public class adminAppController {
         alert.setHeaderText(header);
         alert.setContentText(text);
         Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.getIcons().add(new Image("res/icons/errorIcon.png"));
+        alertStage.getIcons().add(new Image("res/icons/alertIcon.png"));
         alert.showAndWait();
     }
 
@@ -363,7 +336,7 @@ public class adminAppController {
                 if (!name.isEmpty() && !location.isEmpty()) {
                     attractions.add(new Church(name, location));
                     attractionStage.close();
-                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "ALERT");
+                    makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                     serialize();
                 }
                 break;
@@ -391,7 +364,7 @@ public class adminAppController {
                     Museum mm = (Museum) attractions.get(attractionIndex);
                     mm.setName(name);
                     mm.setLocation(location);
-                    mm.setflyer(file);
+                    mm.setFlyer(file);
                     file = null;
                 }
                 break;
@@ -464,7 +437,7 @@ public class adminAppController {
     }
 
     private void museumForm(GridPane gridPane, HBox hBox, String createOrEditFlag) {
-        Label flyerLabel = new Label("flyer upload:");
+        Label flyerLabel = new Label("Flyer upload:");
         flyerLabel.setPadding(new Insets(5, 5, 5, 5));
 
         Label flyerName = new Label();

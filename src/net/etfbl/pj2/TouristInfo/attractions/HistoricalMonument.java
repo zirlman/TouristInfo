@@ -22,14 +22,6 @@ public class HistoricalMonument extends TouristAttraction {
         this.image = image;
     }
 
-    public void setPayMethod(PayMethod payMethod) {
-        this.payMethod = payMethod;
-    }
-
-    public PayMethod getPayMethod() { // TODO: Mozda ce trebati brisati ovaj geter !!!
-        return payMethod;
-    }
-
     public String getDescription() {
         return description;
     }

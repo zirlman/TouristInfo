@@ -27,11 +27,7 @@ public class Museum extends TouristAttraction {
         return flyer;
     }
 
-    public PayMethod getPayMethod() {
-        return payMethod;
-    }
-
-    public void setflyer(String flyer) {
+    public void setFlyer(String flyer) {
         this.flyer = flyer;
     }
 }

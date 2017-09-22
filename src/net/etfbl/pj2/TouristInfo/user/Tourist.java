@@ -261,7 +261,6 @@ public class Tourist extends Thread {
                     Platform.runLater(() -> iv.setImage(new Image("res/icons/church30px.png")));
                     break;
             }
-        //TODO: Postaviti ikonu u zavisnosti od atrakcije
         imageSwitch = '.';
     }
 

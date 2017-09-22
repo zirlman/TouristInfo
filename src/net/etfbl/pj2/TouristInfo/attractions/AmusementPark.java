@@ -20,10 +20,6 @@ public class AmusementPark extends TouristAttraction {
         className = getClass().getSimpleName();
     }
 
-    public PayMethod getPayMethod() {
-        return payMethod;
-    }
-
     public int getPrice() {
         return price;
     }
