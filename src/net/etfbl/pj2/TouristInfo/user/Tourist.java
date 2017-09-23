@@ -39,6 +39,7 @@ public class Tourist extends Thread {
     private boolean restoreImageFlag = false;
     private Location oldLocation = new Location();
     private char imageSwitch;                   // Bira koja ce se ikona postaviti ako je turista posjetio atrakciju
+    private boolean userIsNotified;
 
     public Tourist(int m, int col, int row) {
         touristName = Name.randomVal().toString();
@@ -67,6 +68,7 @@ public class Tourist extends Thread {
         Platform.runLater(userAppController::finishSimulation);
     }
 
+    // TODO: Provjeriti da li su slike dobro azuriraju pri promjeni polja i rijesiti problem za ispis kada korisniku nestane novca
     private void updateLocation() {
         oldLocation.col = location.col;
         oldLocation.row = location.row;
@@ -137,6 +139,10 @@ public class Tourist extends Thread {
     private void updateAndFinish() {
         Platform.runLater(() -> updateOldLocation(userAppController.grid));
         done = true;
+        if (money <= 0 && !userIsNotified) {
+            System.out.println(touristName + " ran out of money and has finished his tour.");
+            userIsNotified = true;
+        }
     }
 
     private void updateOldLocation(GridPane grid) {
@@ -163,29 +169,29 @@ public class Tourist extends Thread {
         }
     }
 
+
     private void handleAttraction(GridPane grid, int col, int row) {
         TouristAttraction ta = userAppController.attractionsInMatrix.get(location);
         ++visitedAttractions;
         try {
-            userAppController.commentator.appendText(touristName + " @ " + ta.getName() + ", location: " + location + "\n");
+            if (!done && !userIsNotified)
+                userAppController.commentator.appendText(touristName + " @ " + ta.getName() + ", location: " + location + "\n");
             if (ta instanceof HistoricalMonument) {
                 restoreImageFlag = true;
-                Platform.runLater(() -> {
-                    ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
-                    if (iv != null)
-                        iv.setImage(new Image("res/icons/shootingAttractionIcon.png"));
-                    Stage stage = new Stage();
-                    Group group = new Group();
-                    group.getChildren().add(new ImageView(((HistoricalMonument) ta).getImage()));
-                    stage.setScene(new Scene(group));
-                    stage.setX(50);
-                    stage.setY(50);
-                    stage.getIcons().add(new Image("res/icons/imageIcon.png"));
-                    stage.show();
-                    PauseTransition delay = new PauseTransition(Duration.seconds(3));
-                    delay.setOnFinished(e -> stage.close());
-                    delay.play();
-                });
+                ImageView iv = (ImageView) adminAppController.getNode(grid, col, row);
+                if (iv != null)
+                    iv.setImage(new Image("res/icons/shootingAttractionIcon.png"));
+                Stage stage = new Stage();
+                Group group = new Group();
+                group.getChildren().add(new ImageView(((HistoricalMonument) ta).getImage()));
+                stage.setScene(new Scene(group));
+                stage.setX(50);
+                stage.setY(50);
+                stage.getIcons().add(new Image("res/icons/imageIcon.png"));
+                stage.show();
+                PauseTransition delay = new PauseTransition(Duration.seconds(3));
+                delay.setOnFinished(e -> stage.close());
+                delay.play();
                 imageSwitch = 'h';
             } else if (ta instanceof Museum) {
                 restoreImageFlag = true;

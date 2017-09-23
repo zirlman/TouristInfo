@@ -3,6 +3,7 @@ package sample;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -300,18 +301,18 @@ public class userAppController {
     public static void finishSimulation() {
         if (doneSimulation) {
             TableColumn<Tourist, String> nameCol = new TableColumn<>("Name");
-            nameCol.setMinWidth(200);
-            nameCol.setMaxWidth(200);
+            nameCol.setMinWidth(150);
+            nameCol.setMaxWidth(150);
             nameCol.setCellValueFactory(new PropertyValueFactory<>("touristName"));
 
             TableColumn<Tourist, Integer> collectedFlyersCol = new TableColumn<>("Collected flyers");
-            collectedFlyersCol.setMinWidth(200);
-            collectedFlyersCol.setMaxWidth(200);
+            collectedFlyersCol.setMinWidth(150);
+            collectedFlyersCol.setMaxWidth(150);
             collectedFlyersCol.setCellValueFactory(new PropertyValueFactory<>("collectedFlyers"));
 
             TableColumn<Tourist, String> visitedAttractionsCol = new TableColumn<>("Visited attractions (%)");
-            visitedAttractionsCol.setMinWidth(200);
-            visitedAttractionsCol.setMaxWidth(200);
+            visitedAttractionsCol.setMinWidth(150);
+            visitedAttractionsCol.setMaxWidth(150);
             visitedAttractionsCol.setCellValueFactory(cellData -> format("%.2f", cellData.getValue().getVisitedAttractions()));
 
             Label label = new Label();
@@ -334,14 +335,28 @@ public class userAppController {
             table.setEditable(true);
             table.setItems(touristsArr);
             table.getColumns().addAll(nameCol, collectedFlyersCol, visitedAttractionsCol);
+            table.setStyle("-fx-alignment: center-right");
             table.setOnMouseClicked(e -> showFlyerButton.setDisable(false));
+            table.getColumns().addListener(new ListChangeListener() {
+                public boolean suspended;
 
+                @Override
+                public void onChanged(ListChangeListener.Change change) {
+                    change.next();
+                    if (change.wasReplaced() && !suspended) {
+                        this.suspended = true;
+                        table.getColumns().setAll(nameCol, collectedFlyersCol, visitedAttractionsCol);
+                        this.suspended = false;
+                    }
+                }
+            });     // Onemogucuje promjenu redoslijeda kolona
             ScrollPane scrollPane = new ScrollPane(table);
-            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);     // TODO: onemoguciti prikaz horizontalBar-a !!!
+            scrollPane.setFitToWidth(true);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
             Region region = new Region();
-            region.setPrefWidth(220);
+            region.setPrefWidth(120);
 
             HBox hBox = new HBox();
             hBox.setPadding(new Insets(10, 10, 10, 10));
@@ -365,20 +380,23 @@ public class userAppController {
         File file = t.getFlyersFolder();
         if (file.isDirectory()) {
             File[] files = file.listFiles();
-            try (BufferedReader br = new BufferedReader(new FileReader(files[new Random().nextInt(files.length)]))) {
-                TextArea ta = new TextArea();
-                String s;
-                while ((s = br.readLine()) != null)
-                    ta.appendText(s);
-                Stage stage = new Stage();
-                stage.setScene(new Scene(ta));
-                stage.setTitle("Museum flyer");
-                stage.getIcons().add(new Image("res/icons/flyerIcon.png"));
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.initOwner(tableStage);
-                stage.showAndWait();
-            } catch (IOException | NullPointerException e) {
-            }
+            if (files.length == 0)
+                adminAppController.makeAlertWindow("Tourist hasn't been in a museum.", "No flyers", "WARNING");
+            else
+                try (BufferedReader br = new BufferedReader(new FileReader(files[new Random().nextInt(files.length)]))) {
+                    TextArea ta = new TextArea();
+                    String s;
+                    while ((s = br.readLine()) != null)
+                        ta.appendText(s);
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(ta));
+                    stage.setTitle("Museum flyer");
+                    stage.getIcons().add(new Image("res/icons/flyerIcon.png"));
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.initOwner(tableStage);
+                    stage.showAndWait();
+                } catch (IOException | NullPointerException e) {
+                }
         }
     }
 

@@ -5,6 +5,7 @@ import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -148,12 +149,25 @@ public class adminAppController {
             if (event.getButton() == MouseButton.SECONDARY)
                 table.getContextMenu().show(table, event.getScreenX(), event.getScreenY());     // Prikazi contextMenu za edit ili remove ukoliko je desni klik pritisnut
         });
+        table.getColumns().addListener(new ListChangeListener() {
+            public boolean suspended;
+
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                change.next();
+                if (change.wasReplaced() && !suspended) {
+                    this.suspended = true;
+                    table.getColumns().setAll(attractionCol, nameCol, locationCol);
+                    this.suspended = false;
+                }
+            }
+        });     // Onemogucuje promjenu redoslijeda kolona
 
         ScrollPane scrollPane = new ScrollPane(table);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);     // TODO: onemoguciti prikaz horizontalBar-a !!!
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
-        tableStage = new Stage();                                       // TODO: Onemoguciti promjenu redoslijeda kolona u table-u !!!
+        tableStage = new Stage();
         tableStage.setTitle("Tourrist Attractions");
         tableStage.setScene(new Scene(scrollPane));
         tableStage.getIcons().add(new Image("res/icons/tableIcon.png"));
@@ -547,22 +561,23 @@ public class adminAppController {
         try (FileOutputStream fos = new FileOutputStream("turisticka-mapa.ser"); ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(new ArrayList<>(attractions));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         } catch (IOException e) {
             System.out.println("IOEXCEPTION IN SERIALIZE !!!");
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
     static void deserialize() {
         try (FileInputStream fis = new FileInputStream("turisticka-mapa.ser"); ObjectInputStream ois = new ObjectInputStream(fis)) {
             attractions.setAll(FXCollections.observableList((List<TouristAttraction>) ois.readObject()));
-        } catch (FileNotFoundException e) {
-            //e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (FileNotFoundException | ClassNotFoundException e) {
             //e.printStackTrace();
         } catch (IOException e) {
             System.out.println("IOEXCEPTION IN DESERIALIZE !!!");
+            File f = new File("turisticka-mapa.ser");
+            if (f.exists())
+                f.delete();
             //e.printStackTrace();
         }
     }

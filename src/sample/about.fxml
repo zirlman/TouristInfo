@@ -7,8 +7,8 @@
 
 <AnchorPane prefHeight="200.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.aboutController">
    <children>
-      <Label fx:id="label" alignment="CENTER" layoutX="14.0" layoutY="32.0" text="Label" textAlignment="CENTER" />
-      <JFXButton fx:id="button" layoutX="173.0" layoutY="71.0" ripplerFill="WHITE" style="-fx-background-color: #263238;" text="Ok" textFill="WHITE" />
-      <Hyperlink fx:id="link" layoutX="158.0" layoutY="106.0" text="JFoenix.jar" />
+      <Label fx:id="label" alignment="CENTER" layoutX="14.0" layoutY="14.0" text="Label" textAlignment="CENTER" />
+      <JFXButton fx:id="button" layoutX="185.0" layoutY="75.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="Ok" textFill="WHITE" />
+      <Hyperlink fx:id="link" layoutX="169.0" layoutY="109.0" text="JFoenix.jar" />
    </children>
 </AnchorPane>

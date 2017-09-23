@@ -21,7 +21,7 @@ public class aboutController {
 
     @FXML
     private void initialize() {
-        label.setText("Tourist Info uses the JFoenix library.\n" + "To get the program working properly please download the .jar file given below");
+        label.setText("Tourist Info uses the JFoenix library.\n" + "To get the program working properly please download the .jar file given below\nor import the library from the app folder.");
         link.setOnAction(e -> {
             Desktop browser = Desktop.getDesktop();
             try {
