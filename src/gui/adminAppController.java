@@ -1,4 +1,4 @@
-package sample;
+package gui;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
@@ -307,7 +307,8 @@ public class adminAppController {
                     viewImage(file);
                     file = null;
                     serialize();
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
             case "Museum":
                 if (!name.isEmpty() && !location.isEmpty() && file != null) {
@@ -316,7 +317,8 @@ public class adminAppController {
                     makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                     file = null;
                     serialize();
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
             case "AmusementPark":
                 if (!name.isEmpty() && !location.isEmpty()) {
@@ -325,6 +327,7 @@ public class adminAppController {
                         if (price != null && !price.isEmpty())
                             try {
                                 Integer tmp = Integer.parseInt(price);
+                                tmp = tmp > 0 ? tmp : tmp == 0 ? 10 : (-1) * tmp;
                                 attractions.add(new AmusementPark(name, location, tmp));
                                 attractionStage.close();
                                 makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
@@ -344,7 +347,8 @@ public class adminAppController {
                     } catch (NullPointerException e) {
                         System.out.println("NULLPOINTEREXC");
                     }
-                }
+                } else
+                    makeAlertWindow("Enter name & location of the attraction", "Empty field(s)", "WARNING");
                 break;
             case "Church":
                 if (!name.isEmpty() && !location.isEmpty()) {
@@ -352,7 +356,8 @@ public class adminAppController {
                     attractionStage.close();
                     makeAlertWindow("Press ESC/ENTER to exit the window.", "Submition successful", "INFORMATION");
                     serialize();
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
         }
     }
@@ -371,7 +376,8 @@ public class adminAppController {
                     hm.setImage(file);
                     viewImage(file);
                     file = null;
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
             case "Museum":
                 if (!name.isEmpty() && !location.isEmpty() && file != null) {
@@ -380,7 +386,8 @@ public class adminAppController {
                     mm.setLocation(location);
                     mm.setFlyer(file);
                     file = null;
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
             case "AmusementPark":
                 if (!name.isEmpty() && !location.isEmpty()) {
@@ -392,6 +399,7 @@ public class adminAppController {
                         if (price != null && !price.isEmpty())
                             try {
                                 Integer tmp = Integer.parseInt(price);
+                                tmp = tmp > 0 ? tmp : tmp == 0 ? 10 : (-1) * tmp;
                                 ap.setPrice(tmp);
                             } catch (NumberFormatException e) {
                                 attractionStage.close();
@@ -401,14 +409,16 @@ public class adminAppController {
                     } catch (NullPointerException e) {
                         System.out.println("NULLPOINTEREXCEPTION IN EDITATTRACTION !!!");
                     }
-                }
+                } else
+                    makeAlertWindow("Enter name & location of the attraction", "Empty field(s)", "WARNING");
                 break;
             case "Church":
                 if (!name.isEmpty() && !location.isEmpty()) {
                     Church c = (Church) attractions.get(attractionIndex);
                     c.setName(name);
                     c.setLocation(location);
-                }
+                } else
+                    makeAlertWindow("Please fill the empty fields", "Empty field(s)", "WARNING");
                 break;
         }
         attractionStage.close();
@@ -574,8 +584,8 @@ public class adminAppController {
         } catch (FileNotFoundException | ClassNotFoundException e) {
             //e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("IOEXCEPTION IN DESERIALIZE !!!");
-            File f = new File("turisticka-mapa.ser");
+            //System.out.println("IOEXCEPTION IN DESERIALIZE !!!");
+            File f = new File("turisticka-mapa.ser"); // Brisanje turisticke mape jer postoji mogucnost da neki objekat nije ispravno deserijalizovan
             if (f.exists())
                 f.delete();
             //e.printStackTrace();

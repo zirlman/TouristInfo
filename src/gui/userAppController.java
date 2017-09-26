@@ -1,4 +1,4 @@
-package sample;
+package gui;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
@@ -79,7 +79,7 @@ public class userAppController {
             if (!forcedClose && doneSimulation)
                 finishSimulation();
             else
-                adminAppController.makeAlertWindow("Start simulation and wait for it to finish.\nDon't close the window !!!", "Invalid request", "ERROR");
+                adminAppController.makeAlertWindow("Start simulation and wait for it to finish.\nDon't close the simulation window !!!", "Invalid request", "ERROR");
         });
         showResultsButton.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER)
@@ -237,6 +237,8 @@ public class userAppController {
         adminAppController.deserialize();
         Random LocationGen = new Random();
         int col, row;
+        int tempTouristNo = touristNumber;
+        int tempAttrationsNo = attractionsNumber;
         Tourist.setTotalAttractions(attractionsNumber);
 
         commentator.setPrefSize(400, 100);
@@ -252,32 +254,32 @@ public class userAppController {
         for (TouristAttraction ta : adminAppController.attractions) {
             col = LocationGen.nextInt(columnNumber);
             row = LocationGen.nextInt(rowNumber);
-            if (attractionsNumber > 0 && adminAppController.getNode(grid, col, row) == null) {
+            if (tempAttrationsNo > 0 && adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
                 attractionsInMatrix.put(new Location(col, row), ta);
-                --attractionsNumber;
+                --tempAttrationsNo;
             }
         }
         int tmp = 0;
-        while (attractionsNumber > 0) {
+        while (tempAttrationsNo > 0) {
             col = LocationGen.nextInt(columnNumber);
             row = LocationGen.nextInt(rowNumber);
             if (adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(attraction), col, row);
                 attractionsInMatrix.put(new Location(col, row), adminAppController.attractions.get(tmp++));
-                --attractionsNumber;
-                if (adminAppController.attractions.size() == tmp)
+                --tempAttrationsNo;
+                if (adminAppController.attractions.size() == tmp)  // Ako je lista dosla do zadnjeg elementa nastavi dodavanje ispocetka
                     tmp = 0;
             }
         }
-        while (touristNumber > 0) {
+        while (tempTouristNo > 0) {
             col = LocationGen.nextInt(columnNumber);
             row = LocationGen.nextInt(rowNumber);
             if (adminAppController.getNode(grid, col, row) == null) {
                 grid.add(new ImageView(tourist), col, row);
                 touristsArr.add(new Tourist(500, col, row));
                 touristsArr.get(touristsArr.size() - 1).start();
-                --touristNumber;
+                --tempTouristNo;
             }
         }
         fillGrid();
@@ -299,7 +301,9 @@ public class userAppController {
     }
 
     public static void finishSimulation() {
-        if (doneSimulation) {
+        if (doneSimulation){
+            simulationStage.close();
+
             TableColumn<Tourist, String> nameCol = new TableColumn<>("Name");
             nameCol.setMinWidth(150);
             nameCol.setMaxWidth(150);
@@ -387,7 +391,7 @@ public class userAppController {
                     TextArea ta = new TextArea();
                     String s;
                     while ((s = br.readLine()) != null)
-                        ta.appendText(s);
+                        ta.appendText(s + System.lineSeparator());
                     Stage stage = new Stage();
                     stage.setScene(new Scene(ta));
                     stage.setTitle("Museum flyer");
@@ -396,6 +400,7 @@ public class userAppController {
                     stage.initOwner(tableStage);
                     stage.showAndWait();
                 } catch (IOException | NullPointerException e) {
+                    e.printStackTrace();
                 }
         }
     }

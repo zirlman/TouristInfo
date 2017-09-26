@@ -1,9 +1,10 @@
-package sample;
+package gui;
 
 import com.jfoenix.controls.JFXButton;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 import java.awt.*;
@@ -33,5 +34,9 @@ public class aboutController {
             }
         });
         button.setOnAction(e -> ((Stage) button.getScene().getWindow()).close()); // Zatvaranje pomocnog prozora
+        button.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER)
+                ((Stage) button.getScene().getWindow()).close();
+        });
     }
 }

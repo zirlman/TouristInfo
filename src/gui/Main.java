@@ -1,10 +1,11 @@
-package sample;
+package gui;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -29,6 +30,7 @@ public class Main extends Application {
         stage.setMaxWidth(460);
         stage.setMinHeight(200);
         stage.setMaxHeight(200);
+        stage.initModality(Modality.APPLICATION_MODAL);
         stage.initOwner(primaryStage);
         stage.showAndWait();
 

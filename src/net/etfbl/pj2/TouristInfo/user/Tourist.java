@@ -1,5 +1,7 @@
 package net.etfbl.pj2.TouristInfo.user;
 
+import gui.adminAppController;
+import gui.userAppController;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -12,8 +14,6 @@ import javafx.util.Duration;
 import net.etfbl.pj2.TouristInfo.attractions.*;
 import net.etfbl.pj2.TouristInfo.enums.Movement;
 import net.etfbl.pj2.TouristInfo.enums.Name;
-import sample.adminAppController;
-import sample.userAppController;
 
 import java.io.*;
 import java.util.Arrays;
@@ -140,7 +140,7 @@ public class Tourist extends Thread {
         Platform.runLater(() -> updateOldLocation(userAppController.grid));
         done = true;
         if (money <= 0 && !userIsNotified) {
-            System.out.println(touristName + " ran out of money and has finished his tour.");
+            userAppController.commentator.appendText(touristName + " ran out of money and has finished his tour.");
             userIsNotified = true;
         }
     }
@@ -151,7 +151,7 @@ public class Tourist extends Thread {
                 ImageView iv = (ImageView) adminAppController.getNode(grid, oldLocation.col, oldLocation.row);
                 iv.setImage(new Image("res/icons/touristIcon30pxWhite.png"));
             } catch (NullPointerException e) {
-                System.out.println("EROR @ " + oldLocation + " SETIMAGE NULLPOINTEREXC");
+                //System.out.println("EROR @ " + oldLocation + " SETIMAGE NULLPOINTEREXC");
             }
             try {
                 if (money <= 0) {     // Ako turisti nestane novca potrebno je azurirati lokaciju na kojoj se nalazio, a ne samo staru lokaciju !!!
@@ -241,7 +241,7 @@ public class Tourist extends Thread {
             try (BufferedReader br = new BufferedReader(new FileReader(flyer)); PrintWriter pw = new PrintWriter(f)) {
                 String string;
                 while ((string = br.readLine()) != null)
-                    pw.append(string);
+                    pw.append(string + System.lineSeparator());
                 ++collectedFlyers;
             }
         } catch (IOException e) {
@@ -305,7 +305,6 @@ public class Tourist extends Thread {
     public boolean isDone() {
         return done;
     }
-
 
     public static void setTotalAttractions(int totalAttractions) {
         Tourist.totalAttractions = totalAttractions;

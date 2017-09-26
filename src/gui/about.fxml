@@ -5,7 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="200.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.aboutController">
+<AnchorPane prefHeight="200.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.aboutController">
    <children>
       <Label fx:id="label" alignment="CENTER" layoutX="14.0" layoutY="14.0" text="Label" textAlignment="CENTER" />
       <JFXButton fx:id="button" layoutX="185.0" layoutY="75.0" ripplerFill="WHITE" style="-fx-background-color: #1E88E5;" text="Ok" textFill="WHITE" />

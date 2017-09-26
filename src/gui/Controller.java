@@ -1,4 +1,4 @@
-package sample;
+package gui;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDatePicker;
